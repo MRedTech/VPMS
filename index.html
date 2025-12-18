@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Visitor Parking</title>
+
+<style>
+  body{
+    font-family: Arial, sans-serif;
+    background:#e9f5e9;
+    margin:0;
+    padding:14px;
+    text-transform: uppercase;
+  }
+  h2{
+    text-align:center;
+    color:#176B39;
+    margin:10px 0 10px 0;
+    letter-spacing:1px;
+    font-size:34px;
+  }
+  .datetime-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    max-width:320px;
+    margin:0 auto 16px auto;
+    padding:8px 16px;
+    border-radius:18px;
+    background:linear-gradient(90deg,#41e671 0%, #176B39 100%);
+    color:#fff;
+    font-size:13px;
+    font-weight:bold;
+    box-shadow:0 4px 10px rgba(0,0,0,.15);
+  }
+  .card{
+    background:#fff;
+    border-radius:18px;
+    padding:16px;
+    box-shadow:0 6px 16px rgba(0,0,0,.12);
+    max-width:520px;
+    margin:0 auto;
+  }
+  label{
+    font-weight:800;
+    font-size:14px;
+    display:block;
+    margin-top:12px;
+    color:#222;
+  }
+  select, input{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    border-radius:12px;
+    border:1px solid #cfcfcf;
+    margin-top:8px;
+    background:#f4f4f4;
+    outline:none;
+  }
+  select:focus, input:focus{
+    border:2px solid #176B39;
+    background:#fff;
+  }
+
+  /* LOT nav */
+  .lot-nav{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin-top:8px;
+  }
+  .navbtn{
+    width:72px;
+    padding:14px 0;
+    border-radius:12px;
+    border:none;
+    background:#176B39;
+    color:#fff;
+    font-size:18px;
+    font-weight:900;
+  }
+  .navbtn:active{ transform:scale(.98); }
+  .lot-display{
+    flex:1;
+    text-align:center;
+    padding:14px 0;
+    border-radius:12px;
+    border:2px solid #176B39;
+    font-size:20px;
+    font-weight:900;
+    background:#f3f3f3;
+    color:#176B39;
+  }
+  .hint{
+    margin-top:8px;
+    text-align:center;
+    font-size:12px;
+    color:#666;
+    font-weight:700;
+  }
+
+  button.submit{
+    width:100%;
+    margin-top:16px;
+    padding:16px;
+    font-size:18px;
+    border-radius:14px;
+    border:none;
+    background:linear-gradient(90deg,#41e671,#176B39);
+    color:#fff;
+    font-weight:900;
+    letter-spacing:1px;
+  }
+  button.submit:active{ transform:scale(.99); }
+
+  .status{
+    text-align:center;
+    margin-top:12px;
+    font-size:14px;
+    font-weight:800;
+  }
+  .footer{
+    text-align:center;
+    font-size:11px;
+    color:#666;
+    margin-top:10px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="datetime-bar">
+  <span id="currentDate">--/--/----</span>
+  <span id="currentTime">--:--:--</span>
+</div>
+
+<h2>VISITOR PARKING</h2>
+
+<div class="card">
+
+  <label>ROUND TIME</label>
+  <select id="round">
+    <option value="">-- SELECT --</option>
+    <option>08:00</option>
+    <option>11:00</option>
+    <option>14:00</option>
+    <option>17:00</option>
+    <option>20:00</option>
+    <option>23:00</option>
+    <option>02:00</option>
+    <option>05:00</option>
+  </select>
+
+  <label>LOT</label>
+  <div class="lot-nav">
+    <button type="button" class="navbtn" onclick="prevLot()">◀</button>
+    <div class="lot-display" id="lotDisplay">GV01</div>
+    <button type="button" class="navbtn" onclick="nextLot()">▶</button>
+  </div>
+
+  <label>REG NUM</label>
+  <input id="regInput" placeholder="ABC1234" autocomplete="off" inputmode="text" />
+
+  <div class="hint" id="hintText">LOT GV01 / 33 (Swipe kiri/kanan pun boleh)</div>
+
+  <button class="submit" type="button" onclick="submitAll()">SUBMIT ALL</button>
+
+  <div class="status" id="status"></div>
+</div>
+
+<div class="footer">Powered by MRED TECH</div>
+
+<script>
+/* =========================
+   SETTINGS
+========================= */
+const WORKER_URL = "https://PASTE-YOUR-WORKER-URL-HERE"; // <-- WAJIB tukar
+const TOTAL_LOTS = 33;
+
+/* =========================
+   DATETIME BAR (display only)
+========================= */
+function updateDateTime(){
+  const now = new Date();
+  document.getElementById("currentDate").innerText =
+    now.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"});
+  document.getElementById("currentTime").innerText =
+    now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+/* =========================
+   SEQUENTIAL LOT INPUT
+========================= */
+let lotIndex = 1; // 1..33
+
+const plates = {};
+for (let i = 1; i <= TOTAL_LOTS; i++){
+  plates[`GV${String(i).padStart(2,"0")}`] = "";
+}
+
+const regInput   = document.getElementById("regInput");
+const lotDisplay = document.getElementById("lotDisplay");
+const hintText   = document.getElementById("hintText");
+const statusBox  = document.getElementById("status");
+
+function lotId(i){ return `GV${String(i).padStart(2,"0")}`; }
+function normalizePlate(v){ return (v || "").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+
+regInput.addEventListener("input", () => {
+  regInput.value = normalizePlate(regInput.value);
+  plates[lotId(lotIndex)] = regInput.value.trim();
+});
+
+function renderLot(){
+  const lot = lotId(lotIndex);
+  lotDisplay.textContent = lot;
+  regInput.value = plates[lot] || "";
+  hintText.textContent = `LOT ${lot} / ${TOTAL_LOTS} (Swipe kiri/kanan pun boleh)`;
+  regInput.focus();
+}
+
+function nextLot(){
+  plates[lotId(lotIndex)] = regInput.value.trim();
+  if (lotIndex < TOTAL_LOTS) lotIndex++;
+  renderLot();
+}
+function prevLot(){
+  plates[lotId(lotIndex)] = regInput.value.trim();
+  if (lotIndex > 1) lotIndex--;
+  renderLot();
+}
+
+/* Swipe support */
+let touchStartX = 0;
+document.addEventListener("touchstart", (e)=>{ touchStartX = e.changedTouches[0].screenX; }, {passive:true});
+document.addEventListener("touchend", (e)=>{
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(dx) > 60) (dx < 0) ? nextLot() : prevLot();
+}, {passive:true});
+
+/* =========================
+   SUBMIT ONCE (BATCH)
+========================= */
+async function submitAll(){
+  const round = document.getElementById("round").value;
+  if (!round){
+    statusBox.innerHTML = "⚠️ PLEASE SELECT ROUND TIME";
+    statusBox.style.color = "red";
+    return;
+  }
+
+  plates[lotId(lotIndex)] = regInput.value.trim(); // save current
+
+  const items = [];
+  for (let i = 1; i <= TOTAL_LOTS; i++){
+    const lot = lotId(i);
+    const plate = (plates[lot] || "").trim();
+    if (plate) items.push({ round, lot, plate }); // submit only filled
+  }
+
+  if (items.length === 0){
+    statusBox.innerHTML = "⚠️ NO REG NUM FILLED";
+    statusBox.style.color = "red";
+    return;
+  }
+
+  statusBox.innerHTML = `⏳ SUBMITTING ${items.length} LOTS...`;
+  statusBox.style.color = "#333";
+
+  try{
+    const res = await fetch(WORKER_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ batch:true, items })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) throw new Error(data.message || "Submit failed");
+
+    statusBox.innerHTML =
+      `✅ SAVED ${data.saved} LOTS<br>` +
+      `FREE: ${data.summary.free} | CHARGED: ${data.summary.charged}`;
+    statusBox.style.color = "green";
+
+  }catch(e){
+    statusBox.innerHTML = "❌ ERROR SUBMITTING DATA";
+    statusBox.style.color = "red";
+  }
+}
+
+renderLot();
+</script>
+
+</body>
+</html>
