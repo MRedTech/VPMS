@@ -205,23 +205,45 @@ for (let i = 1; i <= TOTAL_LOTS; i++){
   plates[`GV${String(i).padStart(2,"0")}`] = "";
 }
 
-// ===== BEEP SOUND + VIBRATE =====
-const beepAudio = new Audio(
-  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="
-);
+// ===== BEEP (WebAudio) + VIBRATE =====
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // kalau browser suspend, resume bila ada user interaction
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume().catch(()=>{});
+  }
+}
 
 function beep() {
   try {
-    beepAudio.currentTime = 0;
-    beepAudio.play();
-  } catch(e){}
+    ensureAudio();
+    if (!audioCtx) return;
+
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+
+    o.type = "square";
+    o.frequency.value = 880;
+
+    g.gain.value = 0.08;
+
+    o.connect(g);
+    g.connect(audioCtx.destination);
+
+    o.start();
+    o.stop(audioCtx.currentTime + 0.06);
+  } catch (e) {}
 }
 
 function vibrate() {
-  if (navigator.vibrate) {
-    navigator.vibrate(50);
-  }
+  if (navigator.vibrate) navigator.vibrate(50);
 }
+document.addEventListener("click", ensureAudio, { once: true });
+document.addEventListener("touchstart", ensureAudio, { once: true, passive: true });
   
 const regInput   = document.getElementById("regInput");
 const lotDisplay = document.getElementById("lotDisplay");
