@@ -205,6 +205,24 @@ for (let i = 1; i <= TOTAL_LOTS; i++){
   plates[`GV${String(i).padStart(2,"0")}`] = "";
 }
 
+// ===== BEEP SOUND + VIBRATE =====
+const beepAudio = new Audio(
+  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="
+);
+
+function beep() {
+  try {
+    beepAudio.currentTime = 0;
+    beepAudio.play();
+  } catch(e){}
+}
+
+function vibrate() {
+  if (navigator.vibrate) {
+    navigator.vibrate(50);
+  }
+}
+  
 const regInput   = document.getElementById("regInput");
 const lotDisplay = document.getElementById("lotDisplay");
 const hintText   = document.getElementById("hintText");
@@ -230,11 +248,16 @@ function nextLot(){
   plates[lotId(lotIndex)] = regInput.value.trim();
   if (lotIndex < TOTAL_LOTS) lotIndex++;
   renderLot();
+  beep();
+  vibrate();
 }
+
 function prevLot(){
   plates[lotId(lotIndex)] = regInput.value.trim();
   if (lotIndex > 1) lotIndex--;
   renderLot();
+  beep();
+  vibrate();
 }
 
 /* Swipe support */
