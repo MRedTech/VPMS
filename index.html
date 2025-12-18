@@ -162,7 +162,7 @@
   </div>
 
   <label>REG NUM</label>
-  <input id="regInput" placeholder="ABC1234" autocomplete="off" inputmode="text" />
+  <input id="regInput" placeholder="" autocomplete="off" inputmode="text" />
 
   <div class="hint" id="hintText">LOT GV01 / 33</div>
 
@@ -220,7 +220,7 @@ function renderLot(){
   const lot = lotId(lotIndex);
   lotDisplay.textContent = lot;
   regInput.value = plates[lot] || "";
-  hintText.textContent = `LOT ${lot} / ${TOTAL_LOTS} (Swipe kiri/kanan pun boleh)`;
+  hintText.textContent = `LOT ${lot} / ${TOTAL_LOTS}`;
   regInput.focus();
 }
 
