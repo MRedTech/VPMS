@@ -171,7 +171,7 @@
   <label>REG NUM</label>
   <input id="regInput" placeholder="" autocomplete="off" inputmode="text" />
 
-  <div class="hint" id="hintText">LOT GV01 / 33 (Swipe kiri/kanan pun boleh)</div>
+  <div class="hint" id="hintText">LOT GV01 / 33</div>
 
   <button class="submit" type="button" onclick="submitAll()">SUBMIT ALL</button>
 
@@ -332,7 +332,7 @@ async function submitAll(){
     statusBox.style.color = "green";
 
     beep(); vibrate();
-    resetToFirstLot(); // auto jump GV01 untuk next round
+    resetToFirstLot(); 
 
   }catch(e){
     statusBox.innerHTML = "❌ ERROR SUBMITTING DATA";
