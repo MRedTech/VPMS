@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Visitor Parking</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; }
+
+body{
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#e9f5e9;
+  text-transform: uppercase;
+  padding: 0 20px 20px 20px;
+}
+
+/* ===== Fixed Header (match Sensory) ===== */
+.fixed-header{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #e9f5e9;
+  z-index: 9999;
+  padding: 14px 0 10px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.header-inner{
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 0 20px;
+}
+.clock-bar{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 180px;
+  margin: 0 auto 10px auto;
+  padding: 2.5px 12px;
+  border-radius: 11px;
+  background: linear-gradient(90deg, #41e671 0%, #176B39 100%);
+  box-shadow: 0 1px 4px 0 #bbdfbb70;
+  font-size: 11px;
+  color: #fff;
+  letter-spacing: 1.4px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  opacity: 0.90;
+  position: relative;
+  z-index: 10;
+}
+.clock-date, .clock-time{ font-size: 11px; }
+
+.header-gradient{
+  font-family: 'Orbitron', Arial, sans-serif;
+  background: linear-gradient(145deg, #54e087 0%, #2b7a2b 100%);
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: 1.3px;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+.header-line{
+  height:3px;
+  width:60px;
+  margin:0 auto 4px auto;
+  background:linear-gradient(90deg,#3bd97b 20%,#2b7a2b 80%);
+  border-radius:2px;
+}
+
+/* ===== Buttons (match Sensory) ===== */
+.btn-3d{
+  background: linear-gradient(145deg, #3bd97b 0%, #2b7a2b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px 22px;
+  box-shadow: 0 3px 12px 0 #bbdfbb, 0 1.5px 3px #3333;
+  letter-spacing: 1.6px;
+  cursor: pointer;
+  transition: box-shadow 0.18s, transform 0.1s;
+}
+.btn-3d:active{
+  box-shadow: 0 2px 5px #bbb;
+  transform: translateY(2px);
+}
+
+
+/* Danger button (match Secure Entry style) */
+.btn-3d-danger{
+  background: linear-gradient(145deg, #ff5a5a 0%, #b30000 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 10px 22px;
+  box-shadow: 0 3px 12px 0 #f0b4b4, 0 1.5px 3px #3333;
+  letter-spacing: 1.6px;
+  cursor: pointer;
+  transition: box-shadow 0.18s, transform 0.1s;
+}
+.btn-3d-danger:active{
+  box-shadow: 0 2px 5px #bbb;
+  transform: translateY(2px);
+}
+/* ===== Card/Form area (aligned with Sensory sizing) ===== */
+.card{
+  max-width: 420px;
+  margin: 18px auto 22px auto;
+  background: #fff;
+  border-radius: 13px;
+  box-shadow: 0 2px 8px #176b3917;
+  padding: 12px 15px 16px 15px;
+}
+
+label{
+  display:block;
+  margin-top:10px;
+  color:#2b7a2b;
+  font-weight:bold;
+  font-size:13px;
+}
+
+select, input{
+  width:100%;
+  padding: 7px 9px;
+  margin-top: 4px;
+  border: 1px solid #2b7a2b;
+  border-radius: 8px;
+  text-transform: uppercase;
+  background-color: #e9f7ff;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  outline:none;
+}
+
+select:invalid,
+select option[value=""]{
+  color:#888888 !important;
+}
+
+.lot-nav{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin-top: 4px;
+}
+.navbtn{
+  width:56px;
+  padding: 10px 0;
+  font-size:16px;
+}
+
+.lot-display{
+  flex:1;
+  text-align:center;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: 1.5px solid #176B39;
+  font-size: 15px;
+  font-weight: bold;
+  background: #f6fff6;
+  color: #176B39;
+  letter-spacing: 1.2px;
+}
+
+.hint{
+  margin-top: 10px;
+  text-align:center;
+  font-size:12px;
+  color:#666;
+  font-weight: bold;
+  letter-spacing: .6px;
+}
+
+.submit-3d{
+  margin-top: 14px;
+  width: 100%;
+}
+
+.status{
+  text-align:center;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.35;
+  letter-spacing: .7px;
+}
+
+/* ===== Fixed Footer (match Sensory) ===== */
+.footer{
+  position: fixed;
+  bottom: 8px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+  color: #9aa9a0;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* ===== GV LIVE LIST (GV01–GV33) ===== */
+.gv-live-box{
+  margin-top: 12px;
+  padding: 12px 12px 10px;
+  border-radius: 16px;
+  background: linear-gradient(145deg,#ffffff,#e3f3e6);
+  box-shadow: 0 6px 14px rgba(0,0,0,.10), inset 0 1px 0 rgba(255,255,255,.7);
+  border: 1px solid rgba(23,107,57,.15);
+}
+.gv-live-title{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  color: #176B39;
+  text-align: center;
+  margin: 2px 0 10px;
+}
+.gv-grid{
+  display: grid;
+  /* 3 kolum (melintang). Bilangan baris (menegak) akan di-set oleh JS ikut zone */
+  grid-template-columns: repeat(var(--gv-cols, 3), 1fr);
+  grid-template-rows: repeat(var(--gv-rows, 11), minmax(38px, auto));
+  grid-auto-flow: column; /* isi dari atas ke bawah, kemudian kolum seterusnya */
+  gap: 8px;
+}
+.gv-slot{
+  border-radius: 10px;
+  padding: 6px 4px 5px;
+  text-align: center;
+  background: #f3fff6;
+  border: 1px solid rgba(23,107,57,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+  min-height: 38px;
+}
+.gv-slot .gv-no{
+  font-size: 10px;
+  font-weight: 900;
+  color: #176B39;
+  letter-spacing: .4px;
+  line-height: 1.05;
+}
+.gv-slot .gv-reg{
+  margin-top: 3px;
+  font-size: 9px;
+  font-weight: 900;
+  color: #3c6f53;
+  letter-spacing: .4px;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gv-slot.is-empty .gv-reg{
+  opacity: .35;
+}
+.gv-slot.is-active{
+  border: 2px solid rgba(65,230,113,.95);
+  box-shadow: 0 0 0 3px rgba(65,230,113,.18);
+  background: #ecfff1;
+}
+
+/* ===== Grid clickable ===== */
+.gv-slot{ cursor: pointer; }
+.gv-slot:active{ transform: translateY(1px); }
+
+/* ===== Compact Popup Modal (only on grid click) ===== */
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  z-index: 12000;
+}
+.modal-card{
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 12px 28px rgba(0,0,0,.22);
+  border: 1px solid rgba(23,107,57,.18);
+}
+.modal-title{
+  border: 2px solid #176B39;
+  border-radius: 14px;
+  padding: 10px 12px;
+  text-align: center;
+  color: #176B39;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 18px;
+  margin-bottom: 10px;
+  background: #f6fff6;
+}
+.modal-label{
+  display:block;
+  margin-top: 6px;
+  color:#2b7a2b;
+  font-weight:bold;
+  font-size:13px;
+}
+.modal-input{
+  width:100%;
+  padding: 10px 10px;
+  margin-top: 6px;
+  border: 1px solid #2b7a2b;
+  border-radius: 10px;
+  text-transform: uppercase;
+  background-color: #e9f7ff;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  outline:none;
+}
+.modal-actions{
+  display:flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+.modal-actions button{
+  flex:1;
+  padding: 12px 0;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ===== Fixed Header (same style as Sensory) ===== -->
+<div class="fixed-header">
+  <div class="header-inner">
+    <div class="clock-bar">
+      <span id="liveDateOnly" class="clock-date"></span>
+      <span id="liveTimeOnly" class="clock-time"></span>
+    </div>
+
+    <div style="text-align:center;margin-bottom:8px;">
+      <h2 class="header-gradient" style="margin:0 0 0.18em 0;">VISITOR PARKING</h2>
+      <div style="color:#489167;font-size:13px;letter-spacing:0.6px;margin-bottom:6px;">VPMS</div>
+    </div>
+
+    <div class="header-line"></div>
+  </div>
+</div>
+
+<div class="card">
+
+  <label>ROUND TIME</label>
+  <select id="round" required>
+    <option value="" disabled selected>-PLEASE SELECT-</option>
+    <option>08:00</option>
+    <option>11:00</option>
+    <option>14:00</option>
+    <option>17:00</option>
+    <option>20:00</option>
+    <option>23:00</option>
+    <option>02:00</option>
+    <option>05:00</option>
+  </select>
+
+  
+  <label>PARKING LIST</label>
+  <select id="zoneSelect">
+    <option value="GV" selected>GROUND VISITOR (GV01-GV33)</option>
+    <option value="P8Z1">P8 ZONE 1 (P8-001-P8-015)</option>
+    <option value="P8Z2">P8 ZONE 2 (P8-046-P8-089)</option>
+    <option value="P8Z3">P8 ZONE 3 (P8-115-P8-140)</option>
+    <option value="P8Z4">P8 ZONE 4 (P8-150-P8-167)</option>
+    <option value="P8Z5">P8 ZONE 5 (P8-193-P8-208)</option>
+    <option value="P8Z6">P8 ZONE 6 (P8-223-P8-239)</option>
+    <option value="P8Z7">P8 ZONE 7 (P8-265-P8-279)</option>
+  </select>
+
+  <label>LOT</label>
+  <div class="lot-nav">
+    <button type="button" class="btn-3d navbtn" onclick="prevLot()">◀</button>
+    <div class="lot-display" id="lotDisplay">GV01</div>
+    <button type="button" class="btn-3d navbtn" onclick="nextLot()">▶</button>
+  </div>
+
+  <label>REG NUM</label>
+  <input id="regInput" placeholder="" autocomplete="off" inputmode="text" />
+
+  <div class="hint" id="hintText">LOT GV01 / 33</div>
+
+  <!-- ===== GV LIVE LIST (GV01–GV33) ===== -->
+  <div id="gvLiveBox" class="gv-live-box" aria-label="GV Parking Live List">
+    <div class="gv-live-title" id="parkingListTitle">PARKING LIST (GV01–GV33)</div>
+    <div id="gvGrid" class="gv-grid"></div>
+  </div>
+
+  <button class="btn-3d submit-3d" type="button" onclick="submitAll()">SUBMIT ALL</button>
+
+  <div class="status" id="status"></div>
+</div>
+
+
+<!-- ===== Compact Popup Modal (Grid Click) ===== -->
+<div id="plateModalOverlay" class="modal-overlay" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalLotTitle">
+    <div id="modalLotTitle" class="modal-title">GV01</div>
+
+    <span class="modal-label">REG NUM</span>
+    <input id="modalRegInput" class="modal-input" placeholder="ENTER REG NUM" autocomplete="off" inputmode="text" />
+
+    <div class="modal-actions">
+      <button type="button" id="modalOkBtn" class="btn-3d">OK</button>
+      <button type="button" id="modalNoBtn" class="btn-3d-danger">NO</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">POWERED BY MRED TECH</div>
+
+<script>
+/* =========================
+   SETTINGS
+========================= */
+const WORKER_URL = "https://PASTE-YOUR-WORKER-URL-HERE"; // <-- WAJIB tukar
+const TOTAL_LOTS = 33;
+
+/* =========================
+   DATETIME BAR (Fixed Header)
+========================= */
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function updateDateTime(){
+  const now = new Date();
+  const d   = pad(now.getDate());
+  const m   = pad(now.getMonth() + 1);
+  const y   = now.getFullYear();
+  const h   = pad(now.getHours());
+  const min = pad(now.getMinutes());
+  const s   = pad(now.getSeconds());
+
+  const dateEl = document.getElementById("liveDateOnly");
+  const timeEl = document.getElementById("liveTimeOnly");
+  if (dateEl) dateEl.textContent = `${d}/${m}/${y}`;
+  if (timeEl) timeEl.textContent = `${h}:${min}:${s}`;
+}
+setInterval(updateDateTime, 1000);
+updateDateTime();
+
+/* =========================
+   BEEP + VIBRATE
+========================= */
+let audioCtx = null;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+}
+function beep() {
+  try {
+    ensureAudio();
+    if (!audioCtx) return;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "square";
+    o.frequency.value = 880;
+    g.gain.value = 0.08;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.06);
+  } catch (e) {}
+}
+function vibrate() {
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+document.addEventListener("click", ensureAudio, { once:true });
+document.addEventListener("touchstart", ensureAudio, { once:true, passive:true });
+
+/* =========================
+   PARKING ZONES + LOT INPUT
+========================= */
+let lotIndex = 1; // 1..TOTAL_LOTS (ikut zone)
+let zoneKey = "GV";
+
+/* Zones */
+const ZONES = {
+  GV:   { label: "GROUND VISITOR", type: "GV", start: 1,   end: 33  },  // GV01 - GV33
+  P8Z1: { label: "P8 ZONE 1",      type: "P8", start: 1,   end: 15  },  // P8-001 - P8-015
+  P8Z2: { label: "P8 ZONE 2",      type: "P8", start: 46,  end: 89  },  // P8-046 - P8-089
+  P8Z3: { label: "P8 ZONE 3",      type: "P8", start: 115, end: 140 },  // P8-115 - P8-140
+  P8Z4: { label: "P8 ZONE 4",      type: "P8", start: 150, end: 167 },  // P8-150 - P8-167
+  P8Z5: { label: "P8 ZONE 5",      type: "P8", start: 193, end: 208 },  // P8-193 - P8-208
+  P8Z6: { label: "P8 ZONE 6",      type: "P8", start: 223, end: 239 },  // P8-223 - P8-239
+  P8Z7: { label: "P8 ZONE 7",      type: "P8", start: 265, end: 279 }   // P8-265 - P8-279
+};
+
+TOTAL_LOTS = (ZONES[zoneKey].end - ZONES[zoneKey].start + 1);
+
+/* Store: simpan ikut lot id (global semua zone) */
+const plates = {};
+
+const regInput   = document.getElementById("regInput");
+const lotDisplay = document.getElementById("lotDisplay");
+const hintText   = document.getElementById("hintText");
+const statusBox  = document.getElementById("status");
+const zoneSelect = document.getElementById("zoneSelect");
+
+/* =========================
+   COMPACT POPUP (Grid Click)
+========================= */
+const plateModalOverlay = document.getElementById("plateModalOverlay");
+const modalLotTitle = document.getElementById("modalLotTitle");
+const modalRegInput = document.getElementById("modalRegInput");
+const modalOkBtn = document.getElementById("modalOkBtn");
+const modalNoBtn = document.getElementById("modalNoBtn");
+
+let modalActiveLot = "";
+
+function indexFromLotId(lot){
+  const z = zoneObj();
+  if (!lot) return 1;
+  if (z.type === "GV"){
+    const n = parseInt(lot.replace(/\D/g,""), 10);
+    return Math.max(1, Math.min(TOTAL_LOTS, (n - z.start + 1)));
+  }
+  // P8-xxx
+  const m = lot.match(/P8-(\d{3})/);
+  const n = m ? parseInt(m[1], 10) : z.start;
+  return Math.max(1, Math.min(TOTAL_LOTS, (n - z.start + 1)));
+}
+
+function openPlateModal(lot){
+  if (!plateModalOverlay || !modalLotTitle || !modalRegInput) return;
+  modalActiveLot = lot;
+  modalLotTitle.textContent = lot; // ikut tepat nombor dalam grid
+  modalRegInput.value = plates[lot] || "";
+  plateModalOverlay.hidden = false;
+  // lock background scroll
+  document.body.style.overflow = "hidden";
+  setTimeout(() => { modalRegInput.focus(); modalRegInput.select(); }, 0);
+}
+
+function closePlateModal(){
+  if (!plateModalOverlay) return;
+  plateModalOverlay.hidden = true;
+  document.body.style.overflow = "";
+  modalActiveLot = "";
+}
+
+if (modalRegInput){
+  modalRegInput.addEventListener("input", () => {
+    modalRegInput.value = normalizePlate(modalRegInput.value);
+  });
+}
+
+if (modalOkBtn){
+  modalOkBtn.addEventListener("click", () => {
+    if (!modalActiveLot) return closePlateModal();
+    const v = normalizePlate(modalRegInput.value);
+    if (v) plates[modalActiveLot] = v;
+    else plates[modalActiveLot] = "";
+    renderGvSlot(modalActiveLot);
+
+    // lompat ke lot yang dipilih (dalam zone semasa)
+    lotIndex = indexFromLotId(modalActiveLot);
+    renderLot();
+    closePlateModal();
+  });
+}
+
+if (modalNoBtn){
+  modalNoBtn.addEventListener("click", closePlateModal);
+}
+
+if (plateModalOverlay){
+  plateModalOverlay.addEventListener("click", (e) => {
+    if (e.target === plateModalOverlay) closePlateModal();
+  });
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!plateModalOverlay || plateModalOverlay.hidden) return;
+  if (e.key === "Escape") closePlateModal();
+});
+
+
+/* =========================
+   PARKING LIVE LIST (ikut zone)
+========================= */
+const gvGrid  = document.getElementById("gvGrid");
+const gvTitle = document.getElementById("parkingListTitle");
+let gvSlots = {}; // lot -> slot element
+
+function zoneObj(){ return ZONES[zoneKey]; }
+
+function lotId(i){
+  const z = zoneObj();
+  const num = z.start + (i - 1);
+  if (z.type === "GV") return `GV${String(num).padStart(2,"0")}`;
+  return `P8-${String(num).padStart(3,"0")}`;
+}
+
+function zoneRangeText(){
+  const first = lotId(1);
+  const last  = lotId(TOTAL_LOTS);
+  return `${first}-${last}`;
+}
+
+function normalizePlate(v){ return (v || "").toUpperCase().replace(/[^A-Z0-9]/g,""); }
+
+function buildGvGrid(){
+  if (!gvGrid) return;
+  gvGrid.innerHTML = "";
+  gvSlots = {};
+
+  const rows = Math.ceil(TOTAL_LOTS / 3); // jumlah baris ke bawah = total ÷ 3 (dibundarkan ke atas)
+  gvGrid.style.setProperty("--gv-cols", "3");
+  gvGrid.style.setProperty("--gv-rows", String(rows));
+
+  const frag = document.createDocumentFragment();
+  for (let i=1;i<=TOTAL_LOTS;i++){
+    const lot = lotId(i);
+
+    const slot = document.createElement("div");
+    slot.className = "gv-slot is-empty";
+    slot.dataset.lot = lot;
+
+    // popup hanya bila user klik grid parking
+    slot.addEventListener("click", () => openPlateModal(lot));
+
+    const no = document.createElement("div");
+    no.className = "gv-no";
+    no.textContent = lot;
+
+    const reg = document.createElement("div");
+    reg.className = "gv-reg";
+    reg.textContent = "-";
+
+    slot.appendChild(no);
+    slot.appendChild(reg);
+
+    gvSlots[lot] = slot;
+    frag.appendChild(slot);
+  }
+  gvGrid.appendChild(frag);
+
+  if (gvTitle) gvTitle.textContent = `PARKING LIST (${zoneRangeText()})`;
+}
+
+function setActiveGvLot(lot){
+  Object.keys(gvSlots).forEach((k)=>{
+    gvSlots[k].classList.toggle("is-active", k === lot);
+  });
+}
+
+function renderGvSlot(lot){
+  const el = gvSlots[lot];
+  if (!el) return;
+  const regEl = el.querySelector(".gv-reg");
+  const v = (plates[lot] || "").trim();
+
+  if (v){
+    el.classList.remove("is-empty");
+    regEl.textContent = v;
+  }else{
+    el.classList.add("is-empty");
+    regEl.textContent = "-";
+  }
+}
+
+function renderAllGvSlots(){
+  Object.keys(gvSlots).forEach(renderGvSlot);
+}
+
+/* =========================
+   LOT NAV + INPUT
+========================= */
+regInput.addEventListener("input", () => {
+  regInput.value = normalizePlate(regInput.value);
+  const lot = lotId(lotIndex);
+  plates[lot] = regInput.value.trim();
+  // live update current lot
+  renderGvSlot(lot);
+});
+
+function renderLot(){
+  const lot = lotId(lotIndex);
+  lotDisplay.textContent = lot;
+  regInput.value = plates[lot] || "";
+  hintText.textContent = `LOT ${lot} / ${TOTAL_LOTS}`;
+  regInput.focus();
+
+  setActiveGvLot(lot);
+  renderGvSlot(lot);
+}
+
+function nextLot(){
+  plates[lotId(lotIndex)] = regInput.value.trim();
+  if (lotIndex < TOTAL_LOTS) lotIndex++;
+  renderLot(); beep(); vibrate();
+}
+function prevLot(){
+  plates[lotId(lotIndex)] = regInput.value.trim();
+  if (lotIndex > 1) lotIndex--;
+  renderLot(); beep(); vibrate();
+}
+
+/* Swipe kiri/kanan */
+let touchStartX = 0;
+document.addEventListener("touchstart", (e)=>{ touchStartX = e.changedTouches[0].screenX; }, {passive:true});
+document.addEventListener("touchend", (e)=>{
+  const dx = e.changedTouches[0].screenX - touchStartX;
+  if (Math.abs(dx) > 60) (dx < 0) ? nextLot() : prevLot();
+}, {passive:true});
+
+/* Reset selepas submit berjaya (reset zone semasa sahaja) */
+function resetToFirstLot(){
+  for (let i=1;i<=TOTAL_LOTS;i++){
+    const lot = lotId(i);
+    plates[lot] = "";
+  }
+  lotIndex = 1;
+  renderLot();
+  renderAllGvSlots();
+}
+
+/* =========================
+   ZONE SELECT (dropdown)
+========================= */
+function applyZone(key){
+  if (!ZONES[key]) return;
+  // simpan lot semasa
+  plates[lotId(lotIndex)] = (regInput.value || "").trim();
+
+  zoneKey = key;
+  TOTAL_LOTS = (ZONES[zoneKey].end - ZONES[zoneKey].start + 1);
+  lotIndex = 1;
+
+  buildGvGrid();
+  renderAllGvSlots();
+  renderLot();
+}
+
+if (zoneSelect){
+  zoneSelect.value = zoneKey;
+  zoneSelect.addEventListener("change", ()=>applyZone(zoneSelect.value));
+}
+
+/* Init */
+buildGvGrid();
+renderAllGvSlots();
+renderLot();
+
+
+/* =========================
+   SUBMIT ONCE (BATCH)
+========================= */
+async function submitAll(){
+  const round = document.getElementById("round").value;
+  if (!round){
+    statusBox.innerHTML = "⚠️ PLEASE SELECT ROUND TIME";
+    statusBox.style.color = "red";
+    return;
+  }
+
+  plates[lotId(lotIndex)] = regInput.value.trim();
+
+  const items = [];
+  for (let i=1;i<=TOTAL_LOTS;i++){
+    const lot = lotId(i);
+    const plate = (plates[lot] || "").trim();
+    if (plate) items.push({ round, lot, plate });
+  }
+
+  if (items.length === 0){
+    statusBox.innerHTML = "⚠️ NO REG NUM FILLED";
+    statusBox.style.color = "red";
+    return;
+  }
+
+  statusBox.innerHTML = `⏳ SUBMITTING ${items.length} LOTS...`;
+  statusBox.style.color = "#333";
+
+  try{
+    const res = await fetch(WORKER_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ batch:true, items })
+    });
+
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.message || "Submit failed");
+
+    statusBox.innerHTML =
+      `✅ SAVED ${data.saved} LOTS<br>` +
+      `FREE: ${data.summary?.free ?? 0} | CHARGED: ${data.summary?.charged ?? 0}`;
+    statusBox.style.color = "green";
+
+    beep(); vibrate();
+    resetToFirstLot(); 
+
+  }catch(e){
+    statusBox.innerHTML = "❌ ERROR SUBMITTING DATA";
+    statusBox.style.color = "red";
+  }
+}
+
+/* =========================
+   FIXED HEADER OFFSET
+========================= */
+(function(){
+  let raf = null;
+  function syncHeaderOffset(){
+    const header = document.querySelector('.fixed-header');
+    if (!header) return;
+    const height = header.offsetHeight || 0;
+    document.body.style.paddingTop = (height + 0) + 'px';
+  }
+  function schedule(){
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(syncHeaderOffset);
+  }
+  window.addEventListener('load', schedule);
+  window.addEventListener('resize', schedule);
+  window.addEventListener('orientationchange', schedule);
+  document.addEventListener('DOMContentLoaded', schedule);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(schedule).catch(()=>{});
+  }
+})();
+</script>
+
+</body>
+</html>
